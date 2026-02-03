@@ -27,13 +27,21 @@ umd_fees <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/hea
 umd_fees_pct <- umd_fees |> mutate(pct_change = (`Fall 2024`- `Fall 2021`)/`Fall 2021` * 100)
 ```
 
+```{r}
+umd_fees_pct_2524 <- umd_fees |> mutate(pct_change = (`Fall 2025`- `Fall 2024`)/`Fall 2024` * 100)
+```
+
+
+```{r}
+comp <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/class_composition.csv")
+```
 
 
 ### Task 4: Describe our results
 
 Write a few sentences about what you found in the data. What's the story here?
 
-
+There was a 14.6% change in fees for student activities, but 0% change in athletics and student sustainability. 
 
 
 
