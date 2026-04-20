@@ -1,0 +1,19 @@
+---
+title: Emma Levine Final Project
+date: "2026-04-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Data is Marathon Results.csv in project folder. It shows indivudual reslts for each runner in the NYC Marathon from 1970- present with categories of age, gender, name, race, year, state, place overall and finish time. It is 94 mb. I think this will be more than enough data, and I can find mean/median with this data set. I will only look at NYC marathon, rather than marathons in general as this will be more specific. 
+
+For weather data, I have started looking at weather underground. What is the easiest way to get historical weather data for NYC from weather underground without having to manually put in each year? I need help with this. 
+
+
+```r
+
+```
+
+
+
