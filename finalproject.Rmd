@@ -2,18 +2,116 @@
 title: Emma Levine Final Project
 date: "2026-04-13"
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 Data is Marathon Results.csv in project folder. It shows indivudual reslts for each runner in the NYC Marathon from 1970- present with categories of age, gender, name, race, year, state, place overall and finish time. It is 94 mb. I think this will be more than enough data, and I can find mean/median with this data set. I will only look at NYC marathon, rather than marathons in general as this will be more specific. 
 
 For weather data, I have started looking at weather underground. What is the easiest way to get historical weather data for NYC from weather underground without having to manually put in each year? I need help with this. 
 
+TESTS
 
-```r
+One of the tests I would use is the pearson test to see if there is any correlation between temperature and finishing time for marathoners. This would give me a clear yes or no as to whether or not this data even affects the finishing time for marathoners. The r value would show me the correlation based on the value, higher meaning a higher correlation between the two values. My values would be "finish time" and "temperature," assuming that my hypothesis is that marathoners perform better when it is colder. 
 
+Another test I could use is linear regression. This would show me how much finish times change based on temperatures. This would give me actual values to see if the times change based on the temperature degrees. This would show me the direct correlation between temperature and finish time. This would also give me the p-value, which would show the statistical significance and the size of the effect. This would help me better attribute how much the temperature outside really affects finish times.
+
+```{r}
+library(tidyverse)
 ```
+```{r}
+NYC_weather <- read_csv("NYC_Central_Park_weather_1869-2022 2.csv") 
+NYC_times <- read_csv("NYC Marathon Results.csv")
+```
+I used marathon weather data from each year and finishing times from each day.
+```{r}
+# Create Year column
+NYC_weather <- NYC_weather %>%
+  mutate(Year = lubridate::year(as.Date(DATE)))
 
+# Summarize weather by year
+weather_yearly <- NYC_weather %>%
+  group_by(Year) %>%
+  summarize(
+    avg_tmax = mean(TMAX, na.rm = TRUE),
+    avg_tmin = mean(TMIN, na.rm = TRUE),
+    total_prcp = sum(PRCP, na.rm = TRUE)
+  )
+
+# Join datasets
+combined_data <- NYC_times %>%
+  left_join(weather_yearly, by = "Year")
+```
+I used AI to combine the data above. I had to extract "year" from the data column to create a common variable. 
+
+```{r}
+ library(lubridate)
+
+NYC_times <- NYC_times %>%
+  mutate(
+    Finish_seconds = period_to_seconds(hms(`Finish Time`))
+  )
+```
+I used AI to convert the finish time so I could calculate z-scores. 
+
+```{r}
+NYC_times <- NYC_times %>%
+  mutate(
+    mean_times = mean(Finish_seconds, na.rm = TRUE),
+    sd_times = sd(Finish_seconds, na.rm = TRUE),
+    z_score = (Finish_seconds - mean_times) / sd_times
+  )
+```
+I calculated z-scores to see which runners were faster or slower than average. This helps me see which finishing times were outliers in comparison to other times. This sets me up to see if finishing times were impacted by the change in temperature. 
+```{r}
+# Re-create combined_data AFTER Finish_seconds exists
+combined_data <- NYC_times %>%
+  left_join(weather_yearly, by = "Year")
+
+# Check that both columns exist
+colnames(combined_data)
+
+# Run model
+model <- lm(Finish_seconds ~ avg_tmax, data = combined_data)
+
+summary(model)
+```
+I used AI to combine data. The model shows me that the avg_tmax estimate = 46.820, which means for every 1 degree increase in temperature, finish times increased by about 47 seconds. The p-value is < 2.2e-16, which is 0.00000000000000022, meaning that the relationship is statistically significant because p < 0.05. However, the Multiple R-squared is 0.0003099 which means temeprature only explains 0.03% of the variation in finish times. 
+```{r}
+cor.test(combined_data$Finish_seconds,
+         combined_data$avg_tmax,
+         method = "pearson")
+```
+I used the correlation test to see the relationship between temperature and finish times. The correlation is 0.01760331, which means there is no there is an extremely weak positive linear relationship between temperature and finish times. However, we see the p-value again here which tells us that it is statistically significant relationship even though it's not linear.
+
+```{r}
+combined_data <- combined_data %>%
+  mutate(
+    temp_group = ifelse(avg_tmax > median(avg_tmax, na.rm = TRUE),
+                        "Hot",
+                        "Cool")
+  )
+t.test(Finish_seconds ~ temp_group,
+       data = combined_data)
+```
+I used AI to create temperature groups to tell me the performance during "hot" years and "cold" years. I ran the t-test to see if the average finish time differs between hotter marathon years and colder marathon years. The average during cool years was 15943.08 and the average during hot years was 16090.86, meaning that runners were about 148 seconds slower in hot years, or about 2.5 minutes. The confidence interval is -158.75 to -136.82, which means the true average difference is between 137 seconds and 159 seconds. The shows that runners had slower finishing times during hotter years. 
+```{r}
+ggplot(combined_data,
+       aes(x = avg_tmax, y = Finish_seconds)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "NYC Marathon Finish Times vs Temperature",
+    x = "Average Maximum Temperature",
+    y = "Finish Time (seconds)"
+  )
+```
+I made a ggplot to visualize the data. The line slopes slightly upward which means hotter temperatures are associated with slower finish times.However, the line is almost flat, which means the relationship is very weak. Basically, the graph is saying that temperature has some effect but doesn't explain much of the variation in marathon performance. 
+
+STORY PITCH
+
+My project was to analyze whether warmer temperatures are associated with slower NYC Marathon finish times using marathon and Central Park weather data. Some of my main findings were that linear regression analysis found that higher temperatures were associated with slower marathon performances and for every 1-degree increase in average maximum temperature, finish times increased by about 47 seconds on average.
+The Pearson correlation test found there was a statistically significant positive relationship between temperature and finish times, but the relationship was weak (r = .018). The t-test found that runners in hotter years finished about 148 seconds slower on average than runners in cooler years. So overall, temperature seems to have some effect on marathon performance, but it only explains a small part of variation in finish times.
+
+Some of my limitations were that the dataset only used yearly average maximum temperatures instead of exact race-day weather conditions.
+I think other factors probably affect marathon performance more so than just weather, like age, training, hydration, humidity and race conditions. 
+
+My reporting plan is to interview sports scientists and marathon coaches about how heat affects endurance performance. I would also talk with marathon runners about how weather impacts pacing, hydration and race strategy. I would also compare super hot marathon years with cooler years using race-day weather data and look at whether serious runners and recreational runners are affected differently by heat. It would also be interesting to look at whether climate change could increase the possibility of warmer marathon conditions in future races.
 
 
