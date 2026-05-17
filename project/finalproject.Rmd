@@ -2,6 +2,10 @@
 title: Emma Levine Final Project
 date: "2026-04-13"
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 Data is Marathon Results.csv in project folder. It shows indivudual reslts for each runner in the NYC Marathon from 1970- present with categories of age, gender, name, race, year, state, place overall and finish time. It is 94 mb. I think this will be more than enough data, and I can find mean/median with this data set. I will only look at NYC marathon, rather than marathons in general as this will be more specific. 
 
 For weather data, I have started looking at weather underground. What is the easiest way to get historical weather data for NYC from weather underground without having to manually put in each year? I need help with this. 
@@ -12,24 +16,4 @@ One of the tests I would use is the pearson test to see if there is any correlat
 
 Another test I could use is linear regression. This would show me how much finish times change based on temperatures. This would give me actual values to see if the times change based on the temperature degrees. This would show me the direct correlation between temperature and finish time. This would also give me the p-value, which would show the statistical significance and the size of the effect. This would help me better attribute how much the temperature outside really affects finish times.
 
-```{r}
-library(tidyverse)
-```
-```{r}
-NYC_weather <- read.csv("NYC_Central_Park_weather_1869-2022 2.csv") 
-NYC_times <- read.csv("NYC Marathon Results.csv")
-```
-```{r}
-NYC_times <- NYC_weather %>%
-  mutate(
-    mean_times = mean(total),
-    sd_times = sd(total),
-    z_score = (total - mean_times) / sd_times
-  )
-```
-
-```{r}
-model <- lm(`Finish.Time` ~ `TMAX`, data = NYC_weather, NYC_times)
-summary(model)
-```
 
